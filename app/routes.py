@@ -13,20 +13,19 @@ books = [
     Book(3, "Fictional Book Title", "A fantasy novel set in an imaginary world.")
 ]
 
-books_bp = Blueprint("books_bp", __name__, url_prefix="/books")
+hello_world_bp = Blueprint("hello_world", __name__)
+books_bp = Blueprint("books", __name__, url_prefix = "/books")
 
-@books_bp.route("", methods=["GET"])
+@books_bp.route("", methods = ["GET"])
 def handle_books():
-    books_response = []
+    books_response =[]
     for book in books:
-        books_response.append(
-            {
-                "id": book.id,
-                "title": book.title,
-                "description": book.description
-            }
-        )
-    return jsonify(books_response)
+        books_response.append({
+            "id": book.id,
+            "title": book.title,
+            "description": book.description
+        })
+    return jsonify(books_response), 200
 
 @books_bp.route("/<book_id>", methods=["GET"])
 def handle_book(book_id):
@@ -34,7 +33,11 @@ def handle_book(book_id):
     for book in books:
         if book.id == book_id:
             return {
-                "id": book.id,
+                "id": book_id,
                 "title": book.title,
-                "description": book.description,
+                "description": book.description
             }
+        
+    return {
+        "message": f"book {book_id} not found"
+        }, 404
