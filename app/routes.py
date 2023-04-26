@@ -1,4 +1,6 @@
-from flask import Blueprint, jsonify
+from app import db
+from app.models.book import Book
+from flask import Blueprint, jsonify, make_response, request
 
 class Book:
     def __init__(self, id, title, description):
@@ -16,7 +18,21 @@ books = [
 hello_world_bp = Blueprint("hello_world", __name__)
 books_bp = Blueprint("books", __name__, url_prefix = "/books")
 
-@books_bp.route("", methods = ["GET"])
+@books_bp.route("", methods=["POST"])
+def handle_books():
+    request_body = request.get_json()
+    new_book = Book(
+        title = request_body["title"],
+        description = request_body["description"]
+    )
+    db.session.add(new_book)
+    db.session.commit()
+
+    return make_response(
+        f"Book {new_book.title} created", 201
+    )
+
+@books_bp.route("", methods=["GET"])
 def handle_books():
     books_response =[]
     for book in books:
