@@ -18,8 +18,23 @@ from flask import Blueprint, jsonify, abort, make_response, request
 
 books_bp = Blueprint("books_bp", __name__, url_prefix="/books")
 
+@books_bp.route("", methods=["GET"])
+def read_all_books():
+    books = Book.query.all()
+    books_response = []
+
+    for book in books:
+        books_response.append(
+            {
+                "id": book.id,
+                "title": book.title,
+                "description": book.description
+            }
+        )
+    return jsonify(books_response)
+    
 @books_bp.route("", methods=["POST"])
-def handle_books():
+def create_books():
     request_body = request.get_json()
 
     if "title" not in request_body or "description" not in request_body:
@@ -33,6 +48,8 @@ def handle_books():
 
     return make_response(f"Book {new_book.title} successfully created", 201)
 
+
+
 #def validate_book(book_id):
 #    try:
 #        book_id = int(book_id)
@@ -45,19 +62,6 @@ def handle_books():
 #
 #    abort(make_response({"message":f"book {book_id} not found"}, 404))
         
-
-# @books_bp.route("", methods=["GET"])
-# def handle_books():
-#     books_response = []
-#     for book in books:
-#         books_response.append(
-#             {
-#                 "id": book.id,
-#                 "title": book.title,
-#                 "description": book.description
-#             }
-#         )
-#     return jsonify(books_response)
 
 # @books_bp.route("/<book_id>", methods=["GET"])
 # def handle_book(book_id):
