@@ -25,3 +25,12 @@ def client(app):
     return app.test_client()
 
 
+@pytest.fixture
+def two_saved_books(app):
+    # Arrange
+    ocean_book = Book(title ="Ocean Book", description = "water 4 ever")
+    mountain_book = Book(title = "Mountain Book", description = "I love to climb rocks")
+
+    db.session.add_all([ocean_book, mountain_book])
+
+    db.session.commit()
