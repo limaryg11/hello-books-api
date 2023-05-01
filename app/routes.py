@@ -4,6 +4,21 @@ from flask import Blueprint, jsonify, make_response, request, abort
 
 books_bp = Blueprint("books_bp", __name__, url_prefix="/books")
 
+# helper functions
+def validate_book(book_id):
+    try:
+        book_id = int(book_id)
+    except:
+        abort(make_response({"message":f"book {book_id} invalid"}, 400))
+
+    book = Book.query.get(book_id)
+
+    if not book:
+        abort(make_response({"message":f"book {book_id} not found"}, 404))
+    
+    return book
+        
+# route functions
 @books_bp.route("", methods=["POST"])
 def create_book():
     request_body = request.get_json()
@@ -18,7 +33,13 @@ def create_book():
 @books_bp.route("", methods=["GET"])
 def read_all_books():
     books_response = []
-    books = Book.query.all()
+
+    title_query = request.args.get("title")
+    if title_query:
+        books = Book.query.filter_by(title=title_query)
+    else:
+        books = Book.query.all()
+
     for book in books:
         books_response.append(
             {
@@ -29,23 +50,10 @@ def read_all_books():
         )
     return jsonify(books_response)
 
-def validate_book(book_id):
-    try:
-        book_id = int(book_id)
-    except:
-        abort(make_response({"message":f"book {book_id} invalid"}, 400))
 
-    book = Book.query.get(book_id)
-
-    if not book:
-        abort(make_response({"message":f"book {book_id} not found"}, 404))
-    
-    return book
-        
 @books_bp.route("/<book_id>", methods=["GET"])
-def handle_book(book_id):
+def read_one_book(book_id):
     book = validate_book(book_id)
-    # book = Book.query.get(book_id)
 
     return {
         "id": book.id,
@@ -54,3 +62,24 @@ def handle_book(book_id):
     }
 
 
+@books_bp.route("/<book_id>", methods=["PUT"])
+def update_book(book_id):
+    book = validate_book(book_id)
+
+    request_body = request.get_json()
+
+    book.title = request_body["title"]
+    book.description = request_body["description"]
+
+    db.session.commit()
+
+    return make_response(f"Book # {book_id} successfully updated")
+
+@books_bp.route("/<book_id>", methods = ["DELETE"])
+def delete_book(book_id):
+    book = validate_book(book_id)
+
+    db.session.delete(book)
+    db.session.commit()
+
+    return make_response(f"Book #{book_id} successfully deleted")
