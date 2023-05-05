@@ -21,6 +21,7 @@ def validate_book(book_id):
 def create_book():
     request_body = request.get_json()
     new_book = Book.from_dict(request_body)
+    validate_book(new_book.id)
 
     db.session.add(new_book)
     db.session.commit()
